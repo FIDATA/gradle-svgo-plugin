@@ -1,0 +1,20 @@
+// SPDX-FileCopyrightText: ©  Basil Peace
+// SPDX-License-Identifier: Apache-2.0
+pluginManagement {
+  repositories {
+    maven {
+      url 'https://fidata.jfrog.io/fidata/plugins-snapshot/'
+      credentials {
+        username = settings.ext.artifactoryUser
+        password = settings.ext.artifactoryPassword
+      }
+    }
+  }
+}
+
+rootProject.name = 'gradle-svgo-plugin'
+
+ext.rootDir = file('.')
+
+apply from: new File(ext.rootDir, 'gradle/build-cache.gradle')
+apply from: new File(ext.rootDir, 'gradle/feature-previews.gradle')

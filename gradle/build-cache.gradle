@@ -1,0 +1,23 @@
+// SPDX-FileCopyrightText: ©  Basil Peace
+// SPDX-License-Identifier: Apache-2.0
+/*
+ * WORKAROUND:
+ * Jenkins doesn't set CI environment variable
+ * https://issues.jenkins-ci.org/browse/JENKINS-36707
+ * <grv87 2018-06-27>
+ */
+ext.pushToRemoteCache = System.getenv().with { containsKey('CI') || containsKey('JENKINS_URL') }
+buildCache {
+  local {
+    enabled = !pushToRemoteCache
+    removeUnusedEntriesAfterDays = 30
+  }
+  remote(HttpBuildCache) {
+    url = 'https://fidata.jfrog.io/fidata/local.gradle.cache/'
+    credentials {
+      username = settings.ext.artifactoryUser
+      password = settings.ext.artifactoryPassword
+    }
+    push = pushToRemoteCache
+  }
+}

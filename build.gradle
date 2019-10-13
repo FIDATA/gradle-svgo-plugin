@@ -1,0 +1,51 @@
+// SPDX-FileCopyrightText: ©  Basil Peace
+// SPDX-License-Identifier: Apache-2.0
+plugins {
+  id 'org.fidata.project.groovy' version '6.0.1-hotfix-publishPluginJar-SNAPSHOT'
+  id 'org.fidata.plugin' version '6.0.1-hotfix-publishPluginJar-SNAPSHOT'
+}
+
+description = 'Gradle SVGO plugin'
+tags.set(['svgo', 'svg', 'optimization', 'image'])
+//noinspection GroovyUnusedAssignment
+license = 'Apache-2.0'
+//noinspection GroovyUnusedAssignment
+publicReleases = true
+contacts {
+  'grv87@yandex.ru' {
+    moniker 'Basil Peace'
+    github 'grv87'
+    roles 'owner', 'developer'
+  }
+}
+
+dependencies {
+  implementation(group: 'org.ysb33r.gradle', name: 'grolifant', version: '0.13').with {
+    status = 'integration'
+  }
+}
+
+gradlePlugin {
+  plugins {
+    svgoPlugin {
+      id = 'org.fidata.svgo'
+      implementationClass = 'org.fidata.gradle.svgo.SvgoPlugin'
+    }
+  }
+}
+
+stutter {
+  sparse = true
+  java(8) {
+    compatibleRange '4.9'
+  }
+  java(9) {
+    compatibleRange '4.9'
+  }
+}
+
+pluginBundle.plugins {
+  svgoPlugin {
+    displayName = 'Svgo Plugin'
+  }
+}

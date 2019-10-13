@@ -1,0 +1,13 @@
+plugins {
+  id 'org.fidata.svgo'
+}
+svgo {
+
+}
+task(type: Svgo, 'svgo1') {
+  input = file('input.svg')
+  output = file('output.svg')
+  config {
+
+  }
+}

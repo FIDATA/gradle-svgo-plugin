@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: ©  Basil Peace
+SPDX-License-Identifier: Apache-2.0
+-->
+<projectDescription>
+	<name>gradle-svgo-plugin</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+	</buildSpec>
+	<natures>
+	</natures>
+</projectDescription>

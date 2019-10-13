@@ -1,0 +1,6 @@
+# SPDX-FileCopyrightText: ©  Basil Peace
+# SPDX-License-Identifier: Apache-2.0
+gradlew eol=lf
+gradlew.bat eol=crlf
+gradle-wrapper.properties eol=lf
+**/gradle/dependency-locks/*.lockfile eol=lf
