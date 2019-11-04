@@ -7,7 +7,11 @@ svgo {
 task(type: Svgo, 'svgo1') {
   input = file('input.svg')
   output = file('output.svg')
-  config {
-
-  }
+  config = [
+    plugins: [
+      removeAttrs: [
+        attrs: '(font-size|font-family|letter-spacing|word-spacing|style)'
+      ]
+    ]
+  ]
 }

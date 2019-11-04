@@ -2,28 +2,27 @@
 // SPDX-License-Identifier: Apache-2.0
 package org.fidata.gradle.svgo
 
+import groovy.transform.CompileStatic
 import javax.inject.Inject
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.FileCollection
-import org.gradle.api.file.ProjectLayout
-import org.gradle.api.model.ObjectFactory
-import org.gradle.api.provider.Provider
-import groovy.transform.CompileStatic
-import org.gradle.api.logging.LogLevel
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.ProviderFactory
-import org.gradle.api.tasks.Console
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFiles
-import org.ysb33r.grolifant.api.exec.AbstractExecWrapperTask
+import org.ysb33r.grolifant.api.exec.specific.AbstractExecWrapperTask
 
 @CompileStatic
-final class SvgoTask extends AbstractExecWrapperTask<SvgoExecSpec, SvgoExtension> {
-  @Delegate(interfaces = false, excludeTypes = [Provider<SvgoExecSpec>])
-  private final SvgoSpec svgoSpec
-
+final class SvgoTask extends AbstractExecWrapperTask<SvgoExtension, SvgoExecSpec> {
+  @Delegate(methodAnnotations = true)
   private final SvgoExtension toolExtension
+
+  public static final Class<DataUri> DataUri = org.fidata.gradle.svgo.DataUri
+
+  @Override
+  protected SvgoExtension getToolExtension() {
+    this.@toolExtension
+  }
 
   @Internal
   final Property<File> input
@@ -37,7 +36,7 @@ final class SvgoTask extends AbstractExecWrapperTask<SvgoExecSpec, SvgoExtension
   @Internal
   final Property<File> output
 
-  // Note that this returned collection is mutable, but private
+  // Note that returned collection is mutable, but private TOTEST
   private FileCollection getFilesInInputDir(File inputFile) {
     project.fileTree(inputFile) { ConfigurableFileTree configurableFileTree ->
       configurableFileTree.include((recursive.get() ? '**/' : '') + '*.svg')
@@ -51,15 +50,13 @@ final class SvgoTask extends AbstractExecWrapperTask<SvgoExecSpec, SvgoExtension
   final FileCollection outputFiles
 
   @Inject
-  SvgoTask(ProviderFactory providerFactory, ObjectFactory objectFactory, ProjectLayout projectLayout) {
-    this.toolExtension = new SvgoExtension(this, SvgoExtension.NAME /* TODO */)
-    this.extensions.add 'toolConfig', toolExtension
-    this.svgoSpec = new SvgoSpec(project, providerFactory, objectFactory)
-    this.input = objectFactory.property(File)
-    this.output = objectFactory.property(File)
-    this.string = objectFactory.property(String)
-    this.recursive = objectFactory.property(Boolean).convention(Boolean.FALSE)
-    this.inputFiles = projectLayout.files {
+  SvgoTask() {
+    this.@toolExtension = new SvgoExtension(project, project.extensions.findByType(SvgoExtension))
+    this.@input = objectFactory.property(File)
+    this.@output = objectFactory.property(File)
+    this.@string = objectFactory.property(String)
+    this.@recursive = objectFactory.property(Boolean).convention(Boolean.FALSE)
+    this.@inputFiles = projectLayout.files {
       File inputFile = input.get()
       if (inputFile.directory) {
         getFilesInInputDir(inputFile)
@@ -67,7 +64,7 @@ final class SvgoTask extends AbstractExecWrapperTask<SvgoExecSpec, SvgoExtension
         inputFile
       }
     }
-    this.outputFiles = projectLayout.files {
+    this.@outputFiles = projectLayout.files {
       File outputFile = output.get()
       File inputFile = input.get()
       if (inputFile.directory) {
@@ -82,12 +79,8 @@ final class SvgoTask extends AbstractExecWrapperTask<SvgoExecSpec, SvgoExtension
 
   @Override
   protected final SvgoExecSpec createExecSpec() {
-    new SvgoExecSpec(project, toolExtension.getResolver())
-  }
-
-  @Override
-  protected SvgoExecSpec configureExecSpec(SvgoExecSpec execSpec) {
-    // Run in temporary dir so that log files don't pollute project root dir
+    SvgoExecSpec execSpec = new SvgoExecSpec(project)
+    // Run in temporary dir so that log files don't pollute project's root dir
     execSpec.workingDir this.temporaryDir
     if (input.present) {
       if (string.present) {
@@ -95,42 +88,44 @@ final class SvgoTask extends AbstractExecWrapperTask<SvgoExecSpec, SvgoExtension
       }
       File inputFile = input.get()
       if (inputFile.directory) {
-        execSpec.scriptArgs '-f', inputFile
+        execSpec.exeArgs "--folder=$inputFile"
         if (recursive.get()) {
-          execSpec.scriptArgs '--recursive'
+          execSpec.exeArgs '--recursive'
         }
       } else {
-        execSpec.scriptArgs '-i', inputFile
+        execSpec.exeArgs "--input=$inputFile"
       }
     } else {
       if (!string.present) {
         throw new IllegalStateException('One of input or string should be set')
       }
-      execSpec.scriptArgs '-s', string.get()
+      execSpec.exeArgs "--string=${ string.get() }"
     }
-    execSpec.scriptArgs '-o', output.get()
+    execSpec.exeArgs "--output=${ output.get() }"
     if (precision.present) {
-      execSpec.scriptArgs "--precision=${ precision.get() }"
+      execSpec.exeArgs "--precision=${ precision.get() }"
     }
     // config
     if (disable.present) {
-      execSpec.scriptArgs "--disable=${ disable.get().join(',') }"
+      execSpec.exeArgs "--disable=${ disable.get().join(',') }"
     }
     if (enable.present) {
-      execSpec.scriptArgs "--enable=${ enable.get().join(',') }"
+      execSpec.exeArgs "--enable=${ enable.get().join(',') }"
     }
-    // datauri
+    if (dataUri.present) {
+      execSpec.exeArgs "--datauri=${ dataUri.get() }"
+    }
     if (multipass.get()) {
-      execSpec.scriptArgs '--multipass'
+      execSpec.exeArgs '--multipass'
     }
     if (pretty.get()) {
-      execSpec.scriptArgs '--pretty'
+      execSpec.exeArgs '--pretty'
       if (indent.present) {
-        execSpec.scriptArgs "--indent=${ indent.get() }"
+        execSpec.exeArgs "--indent=${ indent.get() }"
       }
     }
     if (quiet.get()) {
-      execSpec.scriptArgs '--quiet'
+      execSpec.exeArgs '--quiet'
     }
     execSpec
   }

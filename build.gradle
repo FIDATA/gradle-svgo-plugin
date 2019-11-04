@@ -19,17 +19,21 @@ contacts {
   }
 }
 
+repositories {
+  mavenLocal()
+}
+
 dependencies {
-  implementation(group: 'org.ysb33r.gradle', name: 'grolifant', version: '0.13').with {
+  implementation(group: 'org.fidata', name: 'grolifant', version: '0.14.1-SNAPSHOT').with {
     status = 'integration'
   }
 }
 
 gradlePlugin {
   plugins {
-    svgoPlugin {
-      id = 'org.fidata.svgo'
-      implementationClass = 'org.fidata.gradle.svgo.SvgoPlugin'
+    svgoBasePlugin {
+      id = 'org.fidata.svgo-base'
+      implementationClass = 'org.fidata.gradle.svgo.SvgoBasePlugin'
     }
   }
 }
@@ -45,7 +49,10 @@ stutter {
 }
 
 pluginBundle.plugins {
-  svgoPlugin {
-    displayName = 'Svgo Plugin'
+  svgoBasePlugin {
+    displayName = 'Svgo Base Plugin'
   }
 }
+
+// TODO: https://github.com/ajoberstar/gradle-stutter/issues/23
+tasks.stutterWriteLocks.enabled = false
