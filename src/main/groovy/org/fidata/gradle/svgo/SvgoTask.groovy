@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package org.fidata.gradle.svgo
 
+import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
 import javax.inject.Inject
 import org.gradle.api.file.ConfigurableFileTree
@@ -105,7 +106,11 @@ final class SvgoTask extends AbstractExecWrapperTask<SvgoExtension, SvgoExecSpec
     if (precision.present) {
       execSpec.exeArgs "--precision=${ precision.get() }"
     }
-    // config
+    if (configFile.present) {
+      execSpec.exeArgs "--config=${ configFile.get().asFile }"
+    } else if (config.present) {
+      execSpec.exeArgs "--config=${ JsonOutput.toJson(config.get()) }"
+    }
     if (disable.present) {
       execSpec.exeArgs "--disable=${ disable.get().join(',') }"
     }

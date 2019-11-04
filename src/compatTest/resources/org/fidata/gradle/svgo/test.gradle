@@ -1,17 +1,16 @@
 plugins {
-  id 'org.fidata.svgo'
+  id 'org.fidata.svgo-base'
 }
 svgo {
-
+  config {
+    plugins {
+      removeAttrs {
+        attrs '(font-size|font-family|letter-spacing|word-spacing|style)'
+      }
+    }
+  }
 }
 task(type: Svgo, 'svgo1') {
   input = file('input.svg')
   output = file('output.svg')
-  config = [
-    plugins: [
-      removeAttrs: [
-        attrs: '(font-size|font-family|letter-spacing|word-spacing|style)'
-      ]
-    ]
-  ]
 }

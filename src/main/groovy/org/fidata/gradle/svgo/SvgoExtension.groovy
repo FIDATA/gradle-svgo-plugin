@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Console
@@ -18,6 +19,7 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
+import org.ysb33r.grolifant.api.StringUtils
 import org.ysb33r.grolifant.api.exec.specific.AbstractToolExtension
 
 @CompileStatic
@@ -35,16 +37,22 @@ final class SvgoExtension extends AbstractToolExtension<SvgoExtension> {
   final RegularFileProperty configFile
 
   @Internal
-  final Property<ConfigObject> config
-  
-  void setConfig(Closure obj) {
-    ConfigObject configObject = new ConfigObject()
-    obj.delegate = configObject
-    obj.resolveStrategy = Closure.DELEGATE_FIRST 
-    obj.call(configObject)
-    config.set configObject
+  final MapProperty<?, ?> config
+
+  void setConfig(Closure cl) {
+    config.empty()
+    config cl
   }
-  
+
+  // TOTEST
+  void config(Closure cl) {
+    ConfigObject configObject = new ConfigObject()
+    cl.delegate = configObject
+    cl.resolveStrategy = Closure.DELEGATE_FIRST
+    cl.call(configObject)
+    config.putAll config
+  }
+
   @Input
   @Optional
   protected final Provider<Map<?, ?>> configValue
@@ -85,8 +93,8 @@ final class SvgoExtension extends AbstractToolExtension<SvgoExtension> {
 
     this.@precision = objectFactory.property(Integer)
     this.@configFile = objectFactory.fileProperty()
-    this.@config = objectFactory.property(ConfigObject)
-    this.@enable = objectFactory.listProperty(String) // empty by default since https://github.com/gradle/gradle/pull/7963
+    this.@config = objectFactory.mapProperty(String, Object) // empty by default since https://github.com/gradle/gradle/pull/7963
+    this.@enable = objectFactory.listProperty(String)
     this.@disable = objectFactory.listProperty(String)
     this.@multipass = objectFactory.property(Boolean)
     this.@dataUri = objectFactory.property(DataUri)
@@ -123,7 +131,6 @@ final class SvgoExtension extends AbstractToolExtension<SvgoExtension> {
         null
       }
     }
-
     this.@indentIfPretty = providerFactory.provider {
       pretty.get() ? this.indent.getOrNull() : null
     }
